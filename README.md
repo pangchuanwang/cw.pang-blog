@@ -16,6 +16,10 @@ LeetCode Hot 100 笔记保存在 `content/learning/leetcode-hot-100/`，对应�
 
 删去文章后，请手动移除 `dist/posts/` 下对应的旧 HTML 文件，避免旧链接仍可访问。
 
+## 噜噜图片
+
+网站采用网上找到的原图，没有使用 AI 生成图片。首页学习场景来自[新浪表情包页面](https://www.sina.cn/news/detail/5218710776188031.html)，专题和页脚的站立形象来自[求表情网](https://www.qiubiaoqing.com/img_detail/743377909867086135.html)。图片保存在 `dist/assets/`，转换为静态 WebP；站立 GIF 取首帧，便于阅读并控制加载体积。
+
 ## 发布到 GitHub Pages
 
 1. 创建一个 GitHub 公开仓库，或使用你希望发布博客的现有仓库。
