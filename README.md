@@ -1,10 +1,14 @@
 # cw.pang-blog · 中文个人博客
 
-生活随笔、科研笔记和学习笔记。纯静态页面，支持 GitHub Pages 的仓库子路径，无第三方运行依赖。当前六篇文章均为示例，正式发布前请替换。
+生活随笔、科研笔记和学习笔记。纯静态页面，支持 GitHub Pages 的仓库子路径，无第三方运行依赖。已收录三篇算法学习笔记；另外六篇文章带有示例标记，可以按需替换。
 
 ## 修改文章
 
 编辑 `content/posts.json`。每篇文章包含 `slug`（小写英文与短横线组成的唯一文件名）、`title`、`category`、`date`（YYYY-MM-DD）、`summary`，以及 `sections`。每个 section 包含 `heading` 和 `paragraphs` 数组。分类使用生活随笔、科研笔记或学习笔记。
+
+Markdown 学习笔记保存在 `content/learning/`，文章条目用 `markdown` 指定相对于 `content/` 的文件路径，并设置 `example: false`。日期采用原笔记最后修改日期。当前渲染支持标题、段落、加粗、行内代码、无序列表和围栏代码块；其他 Markdown 格式需先增加相应支持。新增笔记时添加文件及对应文章条目即可。
+
+本次为一次性导入，没有建立本地文件夹的自动同步。
 
 运行 `python3 build.py` 生成首页及文章页。页面样式在 `dist/style.css`，分类筛选在 `dist/script.js`；生成器不会覆盖这两个文件。网站名称和首页介绍在 `build.py` 中修改。
 
