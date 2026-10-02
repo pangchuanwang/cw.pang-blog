@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>005｜盛最多水的容器 · cw.pang-blog</title><meta name="description" content="选择两条竖线，与 x 轴围成容器，求容器能装水的最大面积。使用双指针从两端寻找更高的边界。"><link rel="stylesheet" href="../style.css"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9402a'/%3E%3Cpath d='M9 9h14M9 16h10M9 23h14' stroke='white' stroke-width='3'/%3E%3C/svg%3E"></head>
+<body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="../index.html"><span class="mark">P</span>cw.pang-blog<span class="brand-note">一份个人记录</span></a><nav aria-label="主要导航"><a href="../index.html" >全部文章</a><a href="../index.html?category=生活随笔" >生活随笔</a><a href="../index.html?category=科研笔记" >科研笔记</a><a href="../index.html?category=学习笔记" aria-current=page>学习笔记</a></nav></header>
+<main id="main"><div class="article-wrap"><div class="breadcrumb"><a class="back" href="../index.html?category=学习笔记">学习笔记</a><span>/</span><a class="back" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a></div><article class="article"><div class="post-meta"><span class="category">学习笔记</span><a class="topic-label" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a><time datetime="2026-10-02">2026-10-02</time></div><h1>005｜盛最多水的容器</h1><p class="article-intro">选择两条竖线，与 x 轴围成容器，求容器能装水的最大面积。使用双指针从两端寻找更高的边界。</p><div class="article-body"><p><strong>标签：</strong> <code>双指针</code>　<strong>难度：</strong> 中等</p><p>给定数组 <code>height</code>，第 <code>i</code> 条竖线的高度为 <code>height[i]</code>。选择两条线，与 x 轴围成容器，求容器能装水的最大面积。</p><p>示例：<code>height = [1,8,6,2,5,4,8,3,7]</code> → <code>49</code>。</p><h2>解法：双指针</h2><p>两条线围成的面积由较短的线决定：<code>面积 = 较短线高度 × 两线间距</code>。从数组两端开始，每次移动较短线的指针，尝试找到更高的线。</p><div class="code-block"><span class="code-language">C++</span><pre><code>class Solution {
+public:
+    int maxArea(vector&lt;int&gt;&amp; height) {
+        // 左右指针从数组两端开始。
+        int left = 0;
+        int right = height.size() - 1;
+
+        // 保存目前发现的最大面积。
+        int maxWater = 0;
+
+        // 两指针相遇后，不再能围成容器。
+        while (left &lt; right) {
+            // 容器高度由较短的线决定，宽度是两线间距。
+            int width = right - left;
+            int water = min(height[left], height[right]) * width;
+
+            // 更新最大面积。
+            maxWater = max(maxWater, water);
+
+            // 移动较短的一侧，才有机会找到更高的边界。
+            if (height[left] &lt;= height[right]) {
+                ++left;
+            } else {
+                --right;
+            }
+        }
+
+        // 返回遍历中记录的最大面积。
+        return maxWater;
+    }
+};</code></pre></div><p><strong>为什么移动较短的一侧？</strong> 当前面积受短板限制。若保留短板、只移动较高的一侧，容器宽度会变小，而高度仍不可能超过原来的短板，面积不会变大。移动短板则可能遇到更高的线，抵消宽度变小带来的损失。</p><p><strong>复杂度：</strong> 时间 <code>O(n)</code>，额外空间 <code>O(1)</code>。每一步都会让一个指针向内移动，最多扫描数组一次。</p></div></article><a class="back bottom-back" href="../index.html">浏览全部文章</a></div></main><footer><span>cw.pang-blog <span class="muted">/ 生活 · 科研 · 学习</span></span><span class="footer-companion"><img src="../assets/lulu-standing.webp" alt="" width="72" height="72" loading="lazy"><span class="muted">慢慢记录，好好生活。</span></span></footer></body></html>
