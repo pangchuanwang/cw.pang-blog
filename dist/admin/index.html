@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>内容管理 · cw.pang-blog</title>
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="./editor.css">
+  <script src="./editor.js" defer></script>
+</head>
+<body class="editor-page">
+  <a class="skip" href="#editor">跳到编辑器</a>
+  <header class="editor-header">
+    <a class="brand" href="../index.html"><span class="mark">P</span>cw.pang-blog</a>
+    <div class="editor-header-actions"><a href="../index.html">查看博客 ↗</a><button id="login" class="button secondary" type="button" disabled>登录 GitHub</button></div>
+  </header>
+  <main class="workspace">
+    <aside class="article-library" aria-label="文章列表">
+      <div class="library-heading"><h1>内容管理</h1><img src="../assets/lulu-standing.webp" width="56" height="56" alt=""></div>
+      <button id="new-article" class="button new-article" type="button">＋ 写新文章</button>
+      <label for="article-filter" class="small-label">查看栏目</label>
+      <select id="article-filter"><option value="">全部文章</option><option>生活随笔</option><option>科研笔记</option><option>学习笔记</option></select>
+      <p id="library-count" class="library-count">正在读取文章…</p>
+      <div id="article-list" class="article-list"></div>
+    </aside>
+    <section class="editor-panel" id="editor" aria-labelledby="editor-heading">
+      <div class="editor-topline"><div><p class="small-label" id="article-state">编辑文章</p><h2 id="editor-heading">文章编辑</h2></div><div class="draft-actions"><p id="draft-status" class="draft-status" role="status" aria-live="polite"></p><button id="draft-version" class="button secondary" type="button" hidden>读取发布版本</button></div></div>
+      <p class="connection-note">正在检查 GitHub 连接。草稿自动保存在当前浏览器。</p>
+      <form id="article-form">
+        <fieldset id="article-fields" disabled>
+          <label for="title">标题</label><input id="title" name="title" required maxlength="160" autocomplete="off" placeholder="给这篇文章起个名字">
+          <div class="metadata-grid">
+            <div><label for="category">栏目</label><select id="category" name="category"><option>生活随笔</option><option>科研笔记</option><option>学习笔记</option></select></div>
+            <div><label for="date">日期</label><input id="date" name="date" type="date" required></div>
+            <div id="topic-field"><label for="collection">专题文件夹</label><select id="collection" name="collection"><option value="">其他学习笔记</option><option value="leetcode-hot-100">LeetCode Hot 100</option></select></div>
+          </div>
+          <label for="summary">摘要</label><textarea id="summary" name="summary" rows="2" maxlength="600" placeholder="用一两句话介绍文章，显示在文章列表里。"></textarea>
+          <div class="body-heading"><label for="body">正文</label><div class="view-switch" aria-label="正文显示方式"><button id="write-view" class="view-button" type="button" aria-pressed="true">写作</button><button id="preview-view" class="view-button" type="button" aria-pressed="false">预览</button></div></div>
+          <div id="writing-pane">
+            <div class="writing-tools" aria-label="正文格式"><button type="button" data-format="heading">小标题</button><button type="button" data-format="bold">加粗</button><button type="button" data-format="list">列表</button><button type="button" data-format="code">代码块</button></div>
+            <textarea id="body" name="body" rows="18" required spellcheck="false" placeholder="从这里开始记录。上方按钮可以插入小标题、加粗、列表和代码块。"></textarea>
+          </div>
+          <section id="preview-pane" class="article preview-pane" hidden aria-label="文章预览"><div class="post-meta"><span id="preview-category" class="category"></span><span id="preview-date"></span></div><h3 id="preview-title"></h3><p id="preview-summary" class="article-intro"></p><div id="preview-body" class="article-body"></div></section>
+          <div class="editor-bottomline"><span id="word-count" class="muted">0 字</span><span class="muted">支持标题、加粗、列表和代码块</span></div>
+        </fieldset>
+        <div class="publish-bar"><span class="muted">发布后，所有访客都能阅读。</span><div><button id="save-draft" class="button secondary" type="button" disabled>保存本机草稿</button><button id="publish" class="button" type="submit" disabled>发布文章</button></div></div>
+      </form>
+      <p id="editor-message" role="status" aria-live="polite"></p>
+      <button id="reload-articles" class="button secondary" type="button" hidden>读取最新文章</button>
+    </section>
+  </main>
+</body>
+</html>

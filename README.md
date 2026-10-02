@@ -10,6 +10,12 @@ LeetCode Hot 100 笔记保存在 `content/learning/leetcode-hot-100/`，对应�
 
 本次为一次性导入，没有建立本地文件夹的自动同步。
 
+## 网页内容管理
+
+`admin/` 提供文章选择、新建、分类、Hot 100 专题、正文格式按钮和预览。草稿保存在当前浏览器的本机存储中；多页面编辑冲突时保留备份，博客发布版本更新时提示对照。生成器将现有公开文章导出到 `dist/admin/articles.json`，编辑器和 Codex 沿用同一套文章源文件。
+
+博客页脚的「内容管理」入口连接到 [Sites 管理页](https://cw-pang-blog-editor.chuanwangpang.chatgpt.site/admin/)。登录 GitHub 后可以读取、新建和修改文章，预览并发布到本博客；GitHub App 只安装到 `pangchuanwang/cw.pang-blog`，服务只允许博客所有者编辑文章文件。GitHub 密钥仅保存在服务端。静态 `admin/` 和本地 http://localhost:4173/admin/ 可用于编辑器预览及本机草稿，不连接发布服务。
+
 运行 `python3 build.py` 生成首页及文章页。页面样式在 `dist/style.css`，分类筛选在 `dist/script.js`；生成器不会覆盖这两个文件。网站名称和首页介绍在 `build.py` 中修改。
 
 本地预览：`python3 -m http.server 4173 --directory dist`，然后访问 http://localhost:4173 。
@@ -28,6 +34,8 @@ LeetCode Hot 100 笔记保存在 `content/learning/leetcode-hot-100/`，对应�
 4. 当前工作流在推送到 `main` 时发布，也支持在 Actions 页面手动运行。如仓库默认分支不同，修改 `pages.yml` 的分支名称。
 5. 在 Actions 中等待工作流成功，从 Settings → Pages 获取实际公开网址。
 
-完整博客不需要数据库或服务器。访客可阅读文章；你通过编辑文章文件、提交到仓库来更新内容。
+公开博客不需要数据库或服务器。访客可阅读文章；你可以通过内容管理页发布，也可以修改文章源文件后提交到仓库。
 
 参考：[GitHub Pages 官方部署说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。
+
+发布服务源码位于相邻的 `blog-manager` 项目，由 Sites 私有托管。管理页使用 GitHub App 的短期用户令牌，固定编辑本博客的 `main`。现有文章改栏目或专题时只修改索引，保留原 Markdown 文件路径。GitHub App 已创建并仅安装到博客仓库；实际登录和文章读取已验证。

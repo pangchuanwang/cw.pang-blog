@@ -78,7 +78,7 @@ def page(title, description, content, prefix="./", category="", home=False):
     return f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{e(title)} · cw.pang-blog</title><meta name="description" content="{e(description)}"><link rel="stylesheet" href="{prefix}style.css"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9402a'/%3E%3Cpath d='M9 9h14M9 16h10M9 23h14' stroke='white' stroke-width='3'/%3E%3C/svg%3E"></head>
 <body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="{prefix}index.html"><span class="mark">P</span>cw.pang-blog<span class="brand-note">一份个人记录</span></a><nav aria-label="主要导航"><a href="{prefix}index.html" {"aria-current=page" if home else ""}>全部文章</a>{nav}</nav></header>
-<main id="main">{content}</main><footer><span>cw.pang-blog <span class="muted">/ 生活 · 科研 · 学习</span></span><span class="footer-companion"><img src="{prefix}assets/lulu-standing.webp" alt="" width="72" height="72" loading="lazy"><span class="muted">慢慢记录，好好生活。</span></span></footer>{'<script src="./script.js"></script>' if home else ''}</body></html>'''
+<main id="main">{content}</main><footer><span>cw.pang-blog <span class="muted">/ 生活 · 科研 · 学习</span><br><a class="muted" href="https://cw-pang-blog-editor.chuanwangpang.chatgpt.site/admin/">内容管理</a></span><span class="footer-companion"><img src="{prefix}assets/lulu-standing.webp" alt="" width="72" height="72" loading="lazy"><span class="muted">慢慢记录，好好生活。</span></span></footer>{'<script src="./script.js"></script>' if home else ''}</body></html>'''
 
 
 def post_card(post, number, prefix='./'):
@@ -121,6 +121,17 @@ def build():
     topic_directory.mkdir(parents=True, exist_ok=True)
     (topic_directory / 'index.html').write_text(page('LeetCode Hot 100', 'LeetCode Hot 100 题解笔记：解题思路、复杂度分析与 C++ 实现。', topic_content, prefix='../../', category='学习笔记'))
     (DIST / ".nojekyll").touch()
+    articles = []
+    for post in POSTS:
+        if 'markdown' in post:
+            body = (ROOT / 'content' / post['markdown']).read_text(encoding='utf-8')
+            body = re.sub(r'^# [^\n]+\n\n?', '', body, count=1)
+        else:
+            body = '\n\n'.join('## ' + s['heading'] + '\n\n' + '\n\n'.join(s['paragraphs']) for s in post['sections'])
+        articles.append({**{key: post.get(key, '') for key in ('slug', 'title', 'category', 'date', 'summary', 'collection')}, 'body': body, 'example': post.get('example', True)})
+    admin = DIST / 'admin'
+    admin.mkdir(exist_ok=True)
+    (admin / 'articles.json').write_text(json.dumps({'articles': articles}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(f"Built homepage and {len(POSTS)} articles in {DIST}")
 
 
