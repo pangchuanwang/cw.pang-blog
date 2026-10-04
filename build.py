@@ -22,18 +22,22 @@ def inline_markdown(text):
 
 
 def render_note(filename):
-    """Render the headings, paragraphs, lists and fenced code in learning notes."""
+    """Render headings, paragraphs, lists, tables and fenced code in notes."""
     source = (ROOT / 'content' / filename).read_text(encoding='utf-8')
     blocks, paragraph, code = [], [], []
     language = None
-    in_list = False
+    list_tag = None
+    lines = source.splitlines()
+    skip_until = 0
 
     def flush_paragraph():
         if paragraph:
             blocks.append('<p>' + inline_markdown(' '.join(paragraph)) + '</p>')
             paragraph.clear()
 
-    for line in source.splitlines():
+    for index, line in enumerate(lines):
+        if index < skip_until:
+            continue
         if language is not None:
             if line.startswith('```'):
                 label = 'C++' if language == 'cpp' else language
@@ -43,9 +47,25 @@ def render_note(filename):
             else:
                 code.append(line)
             continue
-        if in_list and not line.startswith('- '):
-            blocks.append('</ul>')
-            in_list = False
+        ordered = re.match(r'^(\d+)\. (.*)$', line)
+        current_list = 'ul' if line.startswith('- ') else ('ol' if ordered else None)
+        if list_tag and current_list != list_tag:
+            blocks.append(f'</{list_tag}>')
+            list_tag = None
+        if line.startswith('|') and index + 1 < len(lines):
+            headers = [cell.strip() for cell in line.strip().strip('|').split('|')]
+            separators = [cell.strip() for cell in lines[index + 1].strip().strip('|').split('|')]
+            if len(headers) == len(separators) and all(re.fullmatch(r':?-{3,}:?', cell) for cell in separators):
+                flush_paragraph()
+                blocks.append('<div class="table-wrap" tabindex="0"><table><thead><tr>' + ''.join(f'<th scope="col">{inline_markdown(cell)}</th>' for cell in headers) + '</tr></thead><tbody>')
+                skip_until = index + 2
+                while skip_until < len(lines) and lines[skip_until].startswith('|'):
+                    cells = [cell.strip() for cell in lines[skip_until].strip().strip('|').split('|')]
+                    cells = (cells + [''] * len(headers))[:len(headers)]
+                    blocks.append('<tr>' + ''.join(f'<td>{inline_markdown(cell)}</td>' for cell in cells) + '</tr>')
+                    skip_until += 1
+                blocks.append('</tbody></table></div>')
+                continue
         if line.startswith('```'):
             flush_paragraph()
             language = line[3:].strip()
@@ -55,12 +75,13 @@ def render_note(filename):
             if len(hashes) > 1:  # The article title is already rendered above.
                 level = len(hashes)
                 blocks.append(f'<h{level}>{inline_markdown(text)}</h{level}>')
-        elif line.startswith('- '):
+        elif current_list:
             flush_paragraph()
-            if not in_list:
-                blocks.append('<ul>')
-                in_list = True
-            blocks.append('<li>' + inline_markdown(line[2:]) + '</li>')
+            if not list_tag:
+                start = f' start="{int(ordered.group(1))}"' if ordered and ordered.group(1) != '1' else ''
+                blocks.append(f'<{current_list}{start}>')
+                list_tag = current_list
+            blocks.append('<li>' + inline_markdown(ordered.group(2) if ordered else line[2:]) + '</li>')
         elif not line.strip():
             flush_paragraph()
         else:
@@ -68,8 +89,8 @@ def render_note(filename):
     if language is not None:
         raise ValueError(f'Unclosed code fence in {filename}')
     flush_paragraph()
-    if in_list:
-        blocks.append('</ul>')
+    if list_tag:
+        blocks.append(f'</{list_tag}>')
     return ''.join(blocks)
 
 

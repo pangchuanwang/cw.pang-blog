@@ -1,12 +1,12 @@
 # cw.pang-blog · 中文个人博客
 
-生活随笔、科研笔记和学习笔记。纯静态页面，支持 GitHub Pages 的仓库子路径，无第三方运行依赖。已收录五篇算法学习笔记；另外六篇文章带有示例标记，可以按需替换。
+生活随笔、科研笔记和学习笔记。纯静态页面，支持 GitHub Pages 的仓库子路径，无第三方运行依赖。已收录七篇算法学习笔记；另外六篇文章带有示例标记，可以按需替换。
 
 ## 修改文章
 
 编辑 `content/posts.json`。每篇文章包含 `slug`（小写英文与短横线组成的唯一文件名）、`title`、`category`、`date`（YYYY-MM-DD）、`summary`，以及 `sections`。每个 section 包含 `heading` 和 `paragraphs` 数组。分类使用生活随笔、科研笔记或学习笔记。
 
-LeetCode Hot 100 笔记保存在 `content/learning/leetcode-hot-100/`，对应条目设置 `collection: "leetcode-hot-100"`；其他学习笔记放在 `content/learning/`，不设置该字段。专题页面为 `learning/leetcode-hot-100/`，学习栏目将其展示为独立文件夹。Markdown 文章条目用 `markdown` 指定相对于 `content/` 的文件路径，并设置 `example: false`。日期采用原笔记最后修改日期。当前渲染支持标题、段落、加粗、行内代码、无序列表和围栏代码块；其他 Markdown 格式需先增加相应支持。新增笔记时添加文件及对应文章条目即可。
+LeetCode Hot 100 笔记保存在 `content/learning/leetcode-hot-100/`，对应条目设置 `collection: "leetcode-hot-100"`；其他学习笔记放在 `content/learning/`，不设置该字段。专题页面为 `learning/leetcode-hot-100/`，学习栏目将其展示为独立文件夹。Markdown 文章条目用 `markdown` 指定相对于 `content/` 的文件路径，并设置 `example: false`。日期采用原笔记最后修改日期。当前渲染支持标题、段落、加粗、行内代码、有序及无序列表、表格和围栏代码块；其他 Markdown 格式需先增加相应支持。新增笔记时添加文件及对应文章条目即可。
 
 本次为一次性导入，没有建立本地文件夹的自动同步。
 
