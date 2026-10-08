@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>008｜无重复字符的最长子串 · cw.pang-blog</title><meta name="description" content="使用滑动窗口与哈希集合，寻找不含重复字符的最长连续子串，比较两种窗口写法。"><link rel="stylesheet" href="../style.css"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9402a'/%3E%3Cpath d='M9 9h14M9 16h10M9 23h14' stroke='white' stroke-width='3'/%3E%3C/svg%3E"></head>
+<body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="../index.html"><span class="mark">P</span>cw.pang-blog<span class="brand-note">一份个人记录</span></a><nav aria-label="主要导航"><a href="../index.html" >全部文章</a><a href="../index.html?category=生活随笔" >生活随笔</a><a href="../index.html?category=科研笔记" >科研笔记</a><a href="../index.html?category=学习笔记" aria-current=page>学习笔记</a></nav></header>
+<main id="main"><div class="article-wrap"><div class="breadcrumb"><a class="back" href="../index.html?category=学习笔记">学习笔记</a><span>/</span><a class="back" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a></div><article class="article"><div class="post-meta"><span class="category">学习笔记</span><a class="topic-label" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a><time datetime="2026-10-06">2026-10-06</time></div><h1>008｜无重复字符的最长子串</h1><p class="article-intro">使用滑动窗口与哈希集合，寻找不含重复字符的最长连续子串，比较两种窗口写法。</p><div class="article-body"><p><strong>LeetCode：</strong> 3　<strong>标签：</strong> <code>滑动窗口</code> <code>Hash</code>　<strong>难度：</strong> 中等</p><p>给定字符串 <code>s</code>，返回不包含重复字符的最长子串长度。子串必须连续，不能跳过中间字符。</p><ul><li><code>&quot;abcabcbb&quot;</code> → <code>3</code>，如 <code>&quot;abc&quot;</code>。</li><li><code>&quot;bbbbb&quot;</code> → <code>1</code>。</li><li><code>&quot;pwwkew&quot;</code> → <code>3</code>，如 <code>&quot;wke&quot;</code>；<code>&quot;pwke&quot;</code> 不连续，不是子串。</li><li>空字符串 → <code>0</code>。</li></ul><h2>共同思路：滑动窗口</h2><p>用左右指针表示一个连续区间，用哈希集合记录窗口内的字符，保持窗口内没有重复字符。左右指针都只向右移动，已扫描过的部分不必从头检查。</p><p>集合记录的是<strong>当前窗口内的字符</strong>，不是整个字符串中出现过的字符。窗口左边界右移时，必须把离开窗口的字符从集合中删除。</p><h2>方法一：枚举左边界，尽量扩展右边界</h2><p>这是截图中的 C++ 写法。每次固定左边界，尽量向右扩展，直到下一个字符已经存在于窗口中；记录长度，再把左边界向右移动一格。</p><ul><li><code>right</code> 初始为 <code>-1</code>，表示窗口还没有字符。</li><li>左边界移到 <code>left</code> 时，删除上一轮离开的字符 <code>s[left - 1]</code>。</li><li>只要下一个字符不重复，就把它加入集合并移动 <code>right</code>。</li><li>扩展结束后的窗口是闭区间 <code>[left, right]</code>，长度为 <code>right - left + 1</code>。</li></ul><div class="code-block"><span class="code-language">C++</span><pre><code>class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        // 保存当前窗口中的字符，用于判断重复。
+        unordered_set&lt;char&gt; window;
+        int n = s.size();
+
+        // 初始窗口为空，右边界尚未进入字符串。
+        int right = -1;
+        int longest = 0;
+
+        // 依次尝试每个左边界。
+        for (int left = 0; left &lt; n; ++left) {
+            if (left &gt; 0) {
+                // 左边界右移后，删除离开窗口的字符。
+                window.erase(s[left - 1]);
+            }
+
+            // 下一个字符不重复，就继续扩展窗口。
+            while (right + 1 &lt; n &amp;&amp; !window.count(s[right + 1])) {
+                window.insert(s[right + 1]);
+                ++right;
+            }
+
+            // 当前窗口是从 left 开始的最长无重复子串。
+            longest = max(longest, right - left + 1);
+        }
+
+        return longest;
+    }
+};</code></pre></div><p><strong>为什么右指针不用退回去？</strong> 上一轮窗口内没有重复字符，删除最左边字符后，剩余部分仍然不重复，可以直接尝试继续向右扩展。</p><h3>count() 和 ! 的含义</h3><p>截图中的集合叫 <code>occ</code>，本笔记中叫 <code>window</code>，作用相同。<code>occ.count(c)</code> 返回集合中字符 <code>c</code> 的数量。因为 <code>unordered_set</code> 不允许重复元素，所以字符存在时返回 <code>1</code>，不存在时返回 <code>0</code>。</p><p>在条件判断中，<code>0</code> 表示假，非零表示真；<code>!</code> 是逻辑取反：</p><div class="table-wrap" tabindex="0"><table><thead><tr><th scope="col">字符是否在集合中</th><th scope="col">count() 返回值</th><th scope="col">加 ! 后的结果</th></tr></thead><tbody><tr><td>存在</td><td>1</td><td>false</td></tr><tr><td>不存在</td><td>0</td><td>true</td></tr></tbody></table></div><p>因此，<code>!occ.count(s[rk + 1])</code> 表示“下一个字符不在当前窗口中”，可以继续扩展窗口。它等价于 <code>occ.count(s[rk + 1]) == 0</code>。本笔记代码中的 <code>!window.count(s[right + 1])</code> 也是这个意思。</p><p><strong>复杂度：</strong> 平均时间 <code>O(n)</code>，额外空间 <code>O(min(n, Σ))</code>，其中 <code>Σ</code> 是字符集大小。左右指针各最多移动 <code>n</code> 次；哈希集合操作平均为 <code>O(1)</code>。</p><h2>方法二：扩展右边界，遇到重复就缩小窗口</h2><p>这是截图中 Java 写法对应的 C++ 版本。两种写法都使用滑动窗口，只是外层循环控制的边界不同。这个版本每轮处理一个新字符，步骤更统一：</p><div class="code-block"><span class="code-language">text</span><pre><code>读取右端新字符 → 若重复则缩小左边界 → 加入新字符 → 更新最长长度</code></pre></div><h3>C++ 代码</h3><div class="code-block"><span class="code-language">C++</span><pre><code>class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        // 保存当前窗口中的字符。
+        unordered_set&lt;char&gt; window;
+        int left = 0;
+        int longest = 0;
+        int n = s.size();
+
+        // 每轮尝试把右端的新字符加入窗口。
+        for (int right = 0; right &lt; n; ++right) {
+            char current = s[right];
+
+            // 新字符已在窗口中，就不断移除左端字符。
+            while (window.count(current)) {
+                window.erase(s[left]);
+                ++left;
+            }
+
+            // 原来的重复字符已移出，现在可以加入新字符。
+            window.insert(current);
+
+            // 此时 [left, right] 内没有重复字符。
+            longest = max(longest, right - left + 1);
+        }
+
+        return longest;
+    }
+};</code></pre></div><h3>为什么用 while，而不是 if？</h3><p>遇到重复字符时，删除最左边的一个字符不一定能消除重复。例如 <code>&quot;abba&quot;</code>：扫描到第二个 <code>b</code> 时，窗口是 <code>&quot;ab&quot;</code>。先删除 <code>a</code>，窗口里还有 <code>b</code>，必须继续删除旧的 <code>b</code>，才能加入新的 <code>b</code>。</p><p><code>while</code> 会一直缩小窗口，直到旧的重复字符离开；然后再加入当前字符，保证窗口仍然不重复。</p><h3>手算：&quot;abba&quot;</h3><div class="table-wrap" tabindex="0"><table><thead><tr><th scope="col">right</th><th scope="col">新字符</th><th scope="col">缩小窗口的操作</th><th scope="col">left</th><th scope="col">加入后的窗口</th><th scope="col">长度</th><th scope="col">最长长度</th></tr></thead><tbody><tr><td>0</td><td>a</td><td>无</td><td>0</td><td>a</td><td>1</td><td>1</td></tr><tr><td>1</td><td>b</td><td>无</td><td>0</td><td>ab</td><td>2</td><td>2</td></tr><tr><td>2</td><td>b</td><td>依次删除 a、旧 b</td><td>2</td><td>b</td><td>1</td><td>2</td></tr><tr><td>3</td><td>a</td><td>无</td><td>2</td><td>ba</td><td>2</td><td>2</td></tr></tbody></table></div><p><strong>复杂度：</strong> 平均时间 <code>O(n)</code>，额外空间 <code>O(min(n, Σ))</code>。虽然有内层 <code>while</code>，每个位置的字符也只会随右边界加入一次、随左边界移除至多一次，总操作次数仍然是线性的。</p><h2>两种写法对照</h2><div class="table-wrap" tabindex="0"><table><thead><tr><th scope="col">对照项</th><th scope="col">方法一</th><th scope="col">方法二</th></tr></thead><tbody><tr><td>外层循环</td><td>每轮移动左边界</td><td>每轮移动右边界</td></tr><tr><td>遇到重复</td><td>暂停扩展右边界</td><td>缩小左边界直到不重复</td></tr><tr><td>加入字符的时机</td><td>扩展右边界时</td><td>消除重复之后</td></tr><tr><td>适合记忆的步骤</td><td>移除旧左端，再尽量扩展</td><td>扩展、检查、收缩、更新</td></tr></tbody></table></div><p>Java 到 C++ 的对应关系：<code>HashSet&lt;Character&gt;</code> → <code>unordered_set&lt;char&gt;</code>，<code>contains</code> → <code>count</code>，<code>remove</code> → <code>erase</code>，<code>add</code> → <code>insert</code>，<code>Math.max</code> → <code>max</code>。C++ 的 <code>string</code> 可以直接用 <code>s[i]</code> 访问字符，无需先转成字符数组。</p></div></article><a class="back bottom-back" href="../index.html">浏览全部文章</a></div></main><footer><span>cw.pang-blog <span class="muted">/ 生活 · 科研 · 学习</span><br><a class="muted" href="https://cw-pang-blog-editor.chuanwangpang.chatgpt.site/admin/">内容管理</a></span><span class="footer-companion"><img src="../assets/lulu-standing.webp" alt="" width="72" height="72" loading="lazy"><span class="muted">慢慢记录，好好生活。</span></span></footer></body></html>

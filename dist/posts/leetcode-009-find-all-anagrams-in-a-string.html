@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>009｜找到字符串中所有字母异位词 · cw.pang-blog</title><meta name="description" content="通过固定长度滑动窗口和字母计数，寻找所有字母异位词的起始下标，并理解计数差的更新。"><link rel="stylesheet" href="../style.css"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9402a'/%3E%3Cpath d='M9 9h14M9 16h10M9 23h14' stroke='white' stroke-width='3'/%3E%3C/svg%3E"></head>
+<body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="../index.html"><span class="mark">P</span>cw.pang-blog<span class="brand-note">一份个人记录</span></a><nav aria-label="主要导航"><a href="../index.html" >全部文章</a><a href="../index.html?category=生活随笔" >生活随笔</a><a href="../index.html?category=科研笔记" >科研笔记</a><a href="../index.html?category=学习笔记" aria-current=page>学习笔记</a></nav></header>
+<main id="main"><div class="article-wrap"><div class="breadcrumb"><a class="back" href="../index.html?category=学习笔记">学习笔记</a><span>/</span><a class="back" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a></div><article class="article"><div class="post-meta"><span class="category">学习笔记</span><a class="topic-label" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a><time datetime="2026-10-07">2026-10-07</time></div><h1>009｜找到字符串中所有字母异位词</h1><p class="article-intro">通过固定长度滑动窗口和字母计数，寻找所有字母异位词的起始下标，并理解计数差的更新。</p><div class="article-body"><p><strong>LeetCode：</strong> 438　<strong>标签：</strong> <code>滑动窗口</code> <code>字母计数</code>　<strong>难度：</strong> 中等</p><p>给定仅包含小写字母的字符串 <code>s</code> 和 <code>p</code>，返回 <code>s</code> 中所有与 <code>p</code> 互为字母异位词的子串起始下标。</p><ul><li><code>s = &quot;cbaebabacd&quot;</code>，<code>p = &quot;abc&quot;</code> → <code>[0,6]</code>。</li><li><code>s = &quot;abab&quot;</code>，<code>p = &quot;ab&quot;</code> → <code>[0,1,2]</code>，窗口可以重叠。</li></ul><h2>共同思路：固定长度的滑动窗口</h2><p>字母异位词的长度和各字母出现次数都相同，顺序可以不同。因此窗口长度固定为 <code>p.size()</code>，只需判断窗口与 <code>p</code> 的字母计数是否相同。</p><p>每次窗口右移一格，移除最左边的字符，加入右边的新字符，不必重新统计整个窗口。<code>s</code> 比 <code>p</code> 短时，直接返回空答案。</p><h2>方法一：比较两个计数数组</h2><p>用长度为 26 的数组分别记录当前窗口和 <code>p</code> 的字母计数。<code>c - &#x27;a&#x27;</code> 将字母映射到 <code>0～25</code>。两个数组相等，就说明每个字母的数量都相同。</p><div class="code-block"><span class="code-language">C++</span><pre><code>class Solution {
+public:
+    vector&lt;int&gt; findAnagrams(string s, string p) {
+        int n = s.size();
+        int m = p.size();
+
+        // 无法构造长度为 m 的窗口。
+        if (n &lt; m) {
+            return {};
+        }
+
+        vector&lt;int&gt; ans;
+
+        // 26 个计数初始均为 0，分别对应 a 到 z。
+        vector&lt;int&gt; windowCount(26);
+        vector&lt;int&gt; targetCount(26);
+
+        // 统计第一个窗口 s[0..m-1] 和目标字符串 p。
+        for (int i = 0; i &lt; m; ++i) {
+            ++windowCount[s[i] - &#x27;a&#x27;];
+            ++targetCount[p[i] - &#x27;a&#x27;];
+        }
+
+        // 单独检查第一个窗口，其起始下标为 0。
+        if (windowCount == targetCount) {
+            ans.push_back(0);
+        }
+
+        // left 是移动前窗口的起始下标。
+        for (int left = 0; left &lt; n - m; ++left) {
+            // 移除离开窗口的最左字符。
+            --windowCount[s[left] - &#x27;a&#x27;];
+
+            // 加入新窗口最右边的字符。
+            ++windowCount[s[left + m] - &#x27;a&#x27;];
+
+            // 移动后的窗口起点是 left + 1。
+            if (windowCount == targetCount) {
+                ans.push_back(left + 1);
+            }
+        }
+
+        return ans;
+    }
+};</code></pre></div><p><strong>下标理解：</strong> 旧窗口是 <code>[left, left + m - 1]</code>，新窗口是 <code>[left + 1, left + m]</code>。因此移除 <code>s[left]</code>，加入 <code>s[left + m]</code>，记录的新起点为 <code>left + 1</code>。</p><p>以 <code>s = &quot;abab&quot;</code>、<code>p = &quot;ab&quot;</code> 为例：</p><div class="table-wrap" tabindex="0"><table><thead><tr><th scope="col">窗口</th><th scope="col">移除</th><th scope="col">加入</th><th scope="col">当前子串</th><th scope="col">起始下标</th></tr></thead><tbody><tr><td>初始</td><td>—</td><td>—</td><td>ab</td><td>0</td></tr><tr><td>右移一格</td><td>a</td><td>a</td><td>ba</td><td>1</td></tr><tr><td>再右移一格</td><td>b</td><td>b</td><td>ab</td><td>2</td></tr></tbody></table></div><p>三个窗口的字母计数都与 <code>p</code> 相同，答案为 <code>[0,1,2]</code>。</p><p><strong>复杂度：</strong> 每次比较最多检查 26 项，时间为 <code>O(m + 26(n - m + 1))</code>；26 是常数，可记为 <code>O(n + m)</code>。不计答案，额外空间为 <code>O(26)</code>，即 <code>O(1)</code>。</p><h2>方法二：维护计数差和 diff</h2><p>方法一每次比较整个计数数组。方法二保存差值，并维护有多少种字母的计数不一致，只需检查 <code>diff == 0</code>。</p><div class="code-block"><span class="code-language">text</span><pre><code>count[c] = 当前窗口中 c 的数量 - p 中 c 的数量
+diff = count 数组中非零项的数量</code></pre></div><p>例如窗口 <code>&quot;aab&quot;</code>、目标 <code>&quot;abc&quot;</code>，有 <code>a: +1</code>、<code>b: 0</code>、<code>c: -1</code>，因此 <code>diff = 2</code>。它表示两种字母的数量不一致，并不是差值之和。</p><h3>diff 为什么这样更新？</h3><p>只关心计数差是否跨过 0：</p><div class="table-wrap" tabindex="0"><table><thead><tr><th scope="col">操作</th><th scope="col">更新前的差值</th><th scope="col">更新后的差值</th><th scope="col">diff 变化</th></tr></thead><tbody><tr><td>移除字符，差值减 1</td><td>1</td><td>0</td><td>减 1，变为一致</td></tr><tr><td>移除字符，差值减 1</td><td>0</td><td>-1</td><td>加 1，变为不一致</td></tr><tr><td>加入字符，差值加 1</td><td>-1</td><td>0</td><td>减 1，变为一致</td></tr><tr><td>加入字符，差值加 1</td><td>0</td><td>1</td><td>加 1，变为不一致</td></tr></tbody></table></div><p>其他变化，如 <code>2 → 1</code> 或 <code>-2 → -1</code>，更新前后都非零，因此 <code>diff</code> 不变。下面代码先判断旧差值，再修改差值。</p><div class="code-block"><span class="code-language">C++</span><pre><code>class Solution {
+public:
+    vector&lt;int&gt; findAnagrams(string s, string p) {
+        int n = s.size();
+        int m = p.size();
+        if (n &lt; m) {
+            return {};
+        }
+
+        vector&lt;int&gt; ans;
+
+        // 记录当前窗口计数减去目标计数的差值。
+        vector&lt;int&gt; count(26);
+        for (int i = 0; i &lt; m; ++i) {
+            ++count[s[i] - &#x27;a&#x27;];
+            --count[p[i] - &#x27;a&#x27;];
+        }
+
+        // 统计有多少种字母的计数不一致。
+        int diff = 0;
+        for (int value : count) {
+            if (value != 0) {
+                ++diff;
+            }
+        }
+
+        if (diff == 0) {
+            ans.push_back(0);
+        }
+
+        for (int left = 0; left &lt; n - m; ++left) {
+            int outgoing = s[left] - &#x27;a&#x27;;
+
+            // 移除字符前，根据差值是否跨过 0 更新 diff。
+            if (count[outgoing] == 1) {
+                --diff;
+            } else if (count[outgoing] == 0) {
+                ++diff;
+            }
+            --count[outgoing];
+
+            int incoming = s[left + m] - &#x27;a&#x27;;
+
+            // 加入字符前，根据差值是否跨过 0 更新 diff。
+            if (count[incoming] == -1) {
+                --diff;
+            } else if (count[incoming] == 0) {
+                ++diff;
+            }
+            ++count[incoming];
+
+            // 先完成移除和加入，再判断整个新窗口。
+            if (diff == 0) {
+                ans.push_back(left + 1);
+            }
+        }
+
+        return ans;
+    }
+};</code></pre></div><p>移除与加入可能是同一个字母，例如 <code>&quot;abab&quot;</code> 中从 <code>&quot;ab&quot;</code> 滑到 <code>&quot;ba&quot;</code>：移除 a 后暂时不匹配，加入 a 后恢复匹配。因此必须完成两步之后再检查 <code>diff</code>。</p><p><strong>复杂度：</strong> 时间 <code>O(n + m + 26)</code>，即 <code>O(n + m)</code>；不计答案，额外空间 <code>O(26)</code>，即 <code>O(1)</code>。它减少了每次窗口移动后的比较操作，两种方法的渐进复杂度相同。</p><p><strong>复习重点：</strong> 先掌握方法一的固定长度窗口与下标更新，再理解方法二只维护“计数差从零变非零、从非零变零”的变化。</p></div></article><a class="back bottom-back" href="../index.html">浏览全部文章</a></div></main><footer><span>cw.pang-blog <span class="muted">/ 生活 · 科研 · 学习</span><br><a class="muted" href="https://cw-pang-blog-editor.chuanwangpang.chatgpt.site/admin/">内容管理</a></span><span class="footer-companion"><img src="../assets/lulu-standing.webp" alt="" width="72" height="72" loading="lazy"><span class="muted">慢慢记录，好好生活。</span></span></footer></body></html>

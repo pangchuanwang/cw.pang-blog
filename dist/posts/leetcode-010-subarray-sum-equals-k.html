@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>010｜和为 K 的子数组 · cw.pang-blog</title><meta name="description" content="从枚举子数组到前缀和与哈希表，统计和为 K 的连续子数组，理解先查询后记录的顺序。"><link rel="stylesheet" href="../style.css"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23c9402a'/%3E%3Cpath d='M9 9h14M9 16h10M9 23h14' stroke='white' stroke-width='3'/%3E%3C/svg%3E"></head>
+<body><a class="skip" href="#main">跳到正文</a><header class="header"><a class="brand" href="../index.html"><span class="mark">P</span>cw.pang-blog<span class="brand-note">一份个人记录</span></a><nav aria-label="主要导航"><a href="../index.html" >全部文章</a><a href="../index.html?category=生活随笔" >生活随笔</a><a href="../index.html?category=科研笔记" >科研笔记</a><a href="../index.html?category=学习笔记" aria-current=page>学习笔记</a></nav></header>
+<main id="main"><div class="article-wrap"><div class="breadcrumb"><a class="back" href="../index.html?category=学习笔记">学习笔记</a><span>/</span><a class="back" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a></div><article class="article"><div class="post-meta"><span class="category">学习笔记</span><a class="topic-label" href="../learning/leetcode-hot-100/">LeetCode Hot 100</a><time datetime="2026-10-08">2026-10-08</time></div><h1>010｜和为 K 的子数组</h1><p class="article-intro">从枚举子数组到前缀和与哈希表，统计和为 K 的连续子数组，理解先查询后记录的顺序。</p><div class="article-body"><p><strong>LeetCode：</strong> 560　<strong>标签：</strong> <code>前缀和</code> <code>Hash</code>　<strong>难度：</strong> 中等</p><p>给定整数数组 <code>nums</code> 和整数 <code>k</code>，统计和恰好为 <code>k</code> 的连续非空子数组个数。</p><ul><li><code>nums = [1,1,1]</code>，<code>k = 2</code> → <code>2</code>，对应下标区间 <code>[0,1]</code> 和 <code>[1,2]</code>。</li><li><code>nums = [1,2,3]</code>，<code>k = 3</code> → <code>2</code>，对应 <code>[1,2]</code> 和 <code>[3]</code>。</li></ul><p>不同下标区间分别计数，即使它们包含的数值相同。</p><h2>方法一：枚举子数组</h2><p>固定右端点 <code>right</code>，从它向左逐步扩展起点 <code>left</code>。每次加上一个数，就得到新区间 <code>[left, right]</code> 的和，不必重新遍历区间求和。</p><div class="code-block"><span class="code-language">C++</span><pre><code>class Solution {
+public:
+    int subarraySum(vector&lt;int&gt;&amp; nums, int k) {
+        int n = nums.size();
+        int count = 0;
+
+        // 依次枚举子数组的右端点。
+        for (int right = 0; right &lt; n; ++right) {
+            int sum = 0;
+
+            // 从右端点向左扩展，逐步累加区间和。
+            for (int left = right; left &gt;= 0; --left) {
+                sum += nums[left];
+
+                // 每个符合条件的下标区间分别计数。
+                if (sum == k) {
+                    ++count;
+                }
+            }
+        }
+
+        return count;
+    }
+};</code></pre></div><p>这里直接读取 <code>nums</code>，不需要像截图中那样复制到 <code>arr</code>。</p><p><strong>复杂度：</strong> 时间 <code>O(n²)</code>，额外空间 <code>O(1)</code>。这是用于理解题意的基础解法，大规模输入时应使用方法二。</p><h2>方法二：前缀和 + 哈希表（重点）</h2><h3>1. 为什么查找 pre - k？</h3><p>前缀和是从数组开头累加到某个位置的总和。用当前前缀和减去更早的前缀和，得到中间子数组的和：</p><div class="code-block"><span class="code-language">text</span><pre><code>当前前缀和 - 更早的前缀和 = k
+更早的前缀和 = 当前前缀和 - k</code></pre></div><p>所以，遍历到当前元素时，只需要查找之前出现过多少次 <code>pre - k</code>。每出现一次，就对应一个以当前位置结尾、和为 k 的子数组。</p><h3>2. 哈希表保存什么？</h3><p><code>frequency</code> 的键是前缀和，值是这个前缀和此前出现的次数。例如 <code>frequency[2] = 3</code>，表示之前有三个前缀的和为 2。</p><p>必须保存<strong>次数</strong>，不能只保存是否存在：数组含有 0 或负数，相同前缀和可能出现多次，每一次都对应不同的起点。</p><h3>3. C++ 代码</h3><div class="code-block"><span class="code-language">C++</span><pre><code>class Solution {
+public:
+    int subarraySum(vector&lt;int&gt;&amp; nums, int k) {
+        // 前缀和 -&gt; 该前缀和此前出现的次数。
+        unordered_map&lt;int, int&gt; frequency;
+
+        // 数组开始前有一个和为 0 的空前缀。
+        frequency[0] = 1;
+
+        int pre = 0;
+        int count = 0;
+
+        for (int num : nums) {
+            // 更新从数组开头到当前位置的前缀和。
+            pre += num;
+
+            // 查找能与当前前缀和相减得到 k 的旧前缀和。
+            auto it = frequency.find(pre - k);
+            if (it != frequency.end()) {
+                // 每次旧前缀出现，都对应一个满足条件的子数组。
+                count += it-&gt;second;
+            }
+
+            // 查找完成后，再记录当前前缀和。
+            ++frequency[pre];
+        }
+
+        return count;
+    }
+};</code></pre></div><h3>4. 关键语句说明</h3><ul><li><code>frequency[0] = 1</code>：记录数组开始前的空前缀。当当前 <code>pre == k</code> 时，可以通过 <code>pre - k == 0</code>，统计从下标 0 开始的子数组。空前缀只是计算工具，答案仍是非空子数组。</li><li><code>find(pre - k)</code>：查找需要的旧前缀和；没找到时返回 <code>end()</code>，找到时 <code>it-&gt;second</code> 就是出现次数。</li><li><code>++frequency[pre]</code>：当前前缀和的次数加 1。键不存在时，<code>unordered_map</code> 的 <code>[]</code> 会先创建值为 0 的表项，再加到 1。</li><li><strong>先查询、后记录</strong>：确保使用的是更早的前缀。如果先记录当前前缀，当 <code>k == 0</code> 时，会把当前前缀减自身对应的空区间也算进去。</li></ul><h3>5. 手算：[1,1,1]，k = 2</h3><p>初始表为 <code>{0: 1}</code>，<code>pre = 0</code>。</p><div class="table-wrap" tabindex="0"><table><thead><tr><th scope="col">下标</th><th scope="col">当前数</th><th scope="col">pre</th><th scope="col">查找 pre - k</th><th scope="col">旧前缀出现次数</th><th scope="col">本轮新增</th><th scope="col">累计答案</th></tr></thead><tbody><tr><td>0</td><td>1</td><td>1</td><td>-1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>1</td><td>1</td><td>2</td><td>0</td><td>1</td><td>1</td><td>1</td></tr><tr><td>2</td><td>1</td><td>3</td><td>1</td><td>1</td><td>1</td><td>2</td></tr></tbody></table></div><p>每轮查询后，把当前 <code>pre</code> 的次数加 1。最后得到两个子数组 <code>[0,1]</code>、<code>[1,2]</code>。</p><p>再看 <code>[0,0]</code>、<code>k = 0</code>：第一轮查到一个旧前缀和 0，新增 1；记录后，前缀和 0 出现次数变为 2。第二轮查到两个旧前缀，新增 2，总答案为 3，即两个单独的 <code>[0]</code> 和整个 <code>[0,0]</code>。</p><p><strong>复杂度：</strong> 平均时间 <code>O(n)</code>，额外空间 <code>O(n)</code>。每个元素只处理一次，哈希表查找和插入平均为 <code>O(1)</code>。</p><p><strong>注意：</strong> 数组允许负数，区间和不会随窗口扩展而单调增加，因此不能直接套用“和大了就缩小、和小了就扩展”的滑动窗口。枚举时也不能因为 <code>sum &gt; k</code> 就提前结束。</p></div></article><a class="back bottom-back" href="../index.html">浏览全部文章</a></div></main><footer><span>cw.pang-blog <span class="muted">/ 生活 · 科研 · 学习</span><br><a class="muted" href="https://cw-pang-blog-editor.chuanwangpang.chatgpt.site/admin/">内容管理</a></span><span class="footer-companion"><img src="../assets/lulu-standing.webp" alt="" width="72" height="72" loading="lazy"><span class="muted">慢慢记录，好好生活。</span></span></footer></body></html>
